@@ -4,7 +4,7 @@ import "sync"
 
 type Registery struct {
 	components map[string]*Component
-	mu         sync.RWMutex // Read-write mutex for thread-safety}
+	mu         sync.RWMutex
 }
 
 var (
@@ -22,24 +22,16 @@ func GetRegistery() *Registery {
 func (r *Registery) GetComponent(name string) *Component {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	return r.components[name]
+	return registery.components[name]
 }
 
-func (r *Registery) AddComponent(c *Component) {
+func (r *Registery) AddComponent(name string, address string) ([]byte, error) {
+
+	newComp := newComponent(name, address)
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.components[(*c).Name] = c
-}
 
-func (r *Registery) ComponentExists(name string) bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	_, exists := r.components[name]
-	return exists
-}
+	r.components[name] = newComp
 
-func (r *Registery) RemoveComponent(name string) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	delete(r.components, name)
+	return newComp.GetToken(), nil
 }
