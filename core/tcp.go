@@ -10,6 +10,10 @@ import (
 
 func StartTCPServer(port int) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+
+	address := listener.Addr().String()
+	fmt.Println("Listening on:", address)
+
 	if err != nil {
 		fmt.Println("There was an error starting the server: \n", err)
 		os.Exit(1)
