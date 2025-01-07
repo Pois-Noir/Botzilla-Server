@@ -17,7 +17,7 @@ func StartTCPServer(port int) {
 
 	defer listener.Close()
 
-	fmt.Println("Commanding server has started on port 8080")
+	fmt.Println("Starting Server")
 
 	for {
 
