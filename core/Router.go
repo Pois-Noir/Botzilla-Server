@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 )
@@ -44,7 +45,13 @@ func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	registery := GetRegistery()
 
+	name := decodedBody["name"]
 	port := decodedBody["port"]
+
+	comp := registery.GetComponent(name)
+	if comp != nil {
+		return nil, errors.New("Component already exists")
+	}
 
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -55,7 +62,7 @@ func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	fmt.Println(decodedBody)
 	fmt.Println(addr)
-	token, err := registery.AddComponent(decodedBody["name"], listenerAddress)
+	token, err := registery.AddComponent(name, listenerAddress)
 
 	return token, err
 }
@@ -84,7 +91,7 @@ func GetComponent(body []byte) ([]byte, error) {
 
 	// TODO, Define an error
 	if comp == nil {
-		return nil, nil
+		return nil, errors.New("Component not found")
 	}
 
 	return []byte(comp.Address), nil
