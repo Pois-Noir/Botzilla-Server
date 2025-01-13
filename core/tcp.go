@@ -44,9 +44,6 @@ func handler(conn net.Conn, secretKey string) {
 
 	componentAddr := conn.RemoteAddr().String()
 
-	var token [16]byte
-	conn.Read(token[:])
-
 	var requestHeader [4]byte
 	conn.Read(requestHeader[:])
 
@@ -77,7 +74,7 @@ func handler(conn net.Conn, secretKey string) {
 		return
 	}
 
-	response, err := router(buffer, token, componentAddr)
+	response, err := router(buffer, componentAddr)
 	if err != nil {
 		fmt.Println("There was an error processing your request: \n", err)
 		return

@@ -35,7 +35,7 @@ func (r *Registery) AddComponent(name string, address string) ([]byte, error) {
 
 	r.components[name] = newComp
 
-	return newComp.GetToken(), nil
+	return []byte("registered"), nil
 }
 
 func (r *Registery) RemoveComponent(name string) {

@@ -7,7 +7,7 @@ import (
 	"net"
 )
 
-func router(message []byte, token [16]byte, addr string) ([]byte, error) {
+func router(message []byte, addr string) ([]byte, error) {
 
 	operationCode := message[0]
 	body := message[1:]
@@ -15,10 +15,6 @@ func router(message []byte, token [16]byte, addr string) ([]byte, error) {
 	// Register Component
 	if operationCode == 0 {
 		return RegisterComponent(body, addr)
-	}
-
-	if !checkToken(addr, token) {
-		return nil, nil
 	}
 
 	if operationCode == 69 {
