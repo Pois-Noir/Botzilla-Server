@@ -2,13 +2,16 @@ package core
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
 )
 
-func StartTCPServer(port int) {
+func StartTCPServer(port int, secretKey string) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 
 	address := listener.Addr().String()
@@ -31,11 +34,11 @@ func StartTCPServer(port int) {
 			continue
 		}
 
-		go handler(conn)
+		go handler(conn, secretKey)
 	}
 }
 
-func handler(conn net.Conn) {
+func handler(conn net.Conn, secretKey string) {
 
 	defer conn.Close()
 
@@ -61,6 +64,19 @@ func handler(conn net.Conn) {
 		return
 	}
 
+	hash := [32]byte{}
+	_, err = conn.Read(hash[:])
+
+	if err != nil {
+		fmt.Printf("Error reading from connection: %v\n", err)
+		return
+	}
+
+	if !verifyHMAC(buffer, []byte(secretKey), hash[:]) {
+		fmt.Printf("Error verifying HMAC signature\n")
+		return
+	}
+
 	response, err := router(buffer, token, componentAddr)
 	if err != nil {
 		fmt.Println("There was an error processing your request: \n", err)
@@ -81,6 +97,29 @@ func handler(conn net.Conn) {
 
 }
 
-func callComponent(addr string) {
+func checkComponent(c *Component) {
 
+	conn, err := net.Dial("tcp", c.Address)
+	if err != nil {
+		registery := GetRegistery()
+		registery.RemoveComponent(c.Address)
+		return
+	}
+
+	defer conn.Close()
+
+}
+
+func generateHMAC(data []byte, key []byte) []byte {
+	mac := hmac.New(sha256.New, key) // 32 bytes
+	mac.Write(data)
+	return mac.Sum(nil)
+}
+
+func verifyHMAC(data []byte, key []byte, hash []byte) bool {
+	// Generate HMAC for the provided data using the same key
+	generatedHMAC := generateHMAC(data, key)
+
+	// Use subtle.ConstantTimeCompare to securely compare the two HMACs
+	return subtle.ConstantTimeCompare(generatedHMAC, hash) == 1
 }

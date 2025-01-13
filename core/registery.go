@@ -37,3 +37,9 @@ func (r *Registery) AddComponent(name string, address string) ([]byte, error) {
 
 	return newComp.GetToken(), nil
 }
+
+func (r *Registery) RemoveComponent(name string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.components, name)
+}

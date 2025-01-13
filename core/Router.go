@@ -89,7 +89,6 @@ func GetComponent(body []byte) ([]byte, error) {
 
 	comp := registery.GetComponent(name)
 
-	// TODO, Define an error
 	if comp == nil {
 		return nil, errors.New("Component not found")
 	}
