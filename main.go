@@ -1,6 +1,6 @@
 package main
 
-import "BotzillaServer/core"
+import "github.com/Pois-Noir/Botzilla-Server/core"
 
 func main() {
 
