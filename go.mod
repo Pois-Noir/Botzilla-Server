@@ -1,2 +1,2 @@
 //module BotzillaServer
-module github.com/Pois-Noir/Botzilla-Server
+module github.com/poisnoir/botzilla/server
