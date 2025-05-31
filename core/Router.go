@@ -27,10 +27,6 @@ func router(message []byte, addr string) ([]byte, error) {
 
 }
 
-func checkToken(addr string, token [16]byte) bool {
-	return true
-}
-
 func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	decodedBody := map[string]string{}

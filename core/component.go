@@ -4,6 +4,7 @@ type Component struct {
 	Name    string
 	Group   []string
 	Address string
+	Streams []string
 }
 
 func newComponent(name string, address string) *Component {

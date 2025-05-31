@@ -115,24 +115,6 @@ func cleanupInactiveListeners() {
 	}
 }
 
-func checkComponent(name string, component *Component) {
-}
-
-/*
-func checkComponent(c *Component) {
-
-	conn, err := net.Dial("tcp", c.Address)
-	if err != nil {
-		registery := GetRegistery()
-		registery.RemoveComponent(c.Address)
-		return
-	}
-
-	defer conn.Close()
-
-}
-*/
-
 func generateHMAC(data []byte, key []byte) []byte {
 	mac := hmac.New(sha256.New, key) // 32 bytes
 	mac.Write(data)
