@@ -27,6 +27,8 @@ func router(message []byte, addr string) ([]byte, error) {
 
 }
 
+// TODO
+// Have to generate token
 func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	decodedBody := map[string]string{}
@@ -35,15 +37,8 @@ func RegisterComponent(body []byte, addr string) ([]byte, error) {
 		return nil, err
 	}
 
-	registery := GetRegistery()
-
 	name := decodedBody["name"]
 	port := decodedBody["port"]
-
-	comp := registery.GetComponent(name)
-	if comp != nil {
-		return nil, errors.New("Component already exists")
-	}
 
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -52,19 +47,32 @@ func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	listenerAddress := net.JoinHostPort(host, port)
 
+	comp := newComponent(name, listenerAddress)
+
+	componentList := GetComponentList()
+
+	err = componentList.Add(name, comp)
+	if err != nil {
+		return nil, err
+	}
+
+	token := []byte("amir12345")
+
 	fmt.Println(decodedBody)
 	fmt.Println(addr)
-	token, err := registery.AddComponent(name, listenerAddress)
 
 	return token, err
 }
 
+// TODO
+// Current Code is old and it looks wrong
+// future amir look into it
 func GetComponents() ([]byte, error) {
-	registery := GetRegistery()
+	componentList := GetComponentList()
 
 	var result []string
 
-	for _, value := range registery.components {
+	for _, value := range componentList.data {
 		result = append(result, value.Name)
 	}
 
@@ -77,9 +85,9 @@ func GetComponent(body []byte) ([]byte, error) {
 
 	name := string(body)
 
-	registery := GetRegistery()
+	componentList := GetComponentList()
 
-	comp := registery.GetComponent(name)
+	comp := componentList.Get(name)
 
 	if comp == nil {
 		return nil, errors.New("Component not found")
