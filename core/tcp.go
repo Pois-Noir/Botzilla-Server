@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"time"
 )
 
 func StartTCPServer(port int, secretKey string) {
@@ -27,7 +26,7 @@ func StartTCPServer(port int, secretKey string) {
 
 	fmt.Println("Starting Server")
 
-	go cleanupInactiveListeners()
+	// go cleanupInactiveListeners()
 
 	for {
 
@@ -97,23 +96,23 @@ func handler(conn net.Conn, secretKey string) {
 
 }
 
-func cleanupInactiveListeners() {
-	for {
-		registry := GetRegistery()
+// func cleanupInactiveListeners() {
+// 	for {
+// 		registry := GetRegistery()
 
-		for name, component := range registry.components {
+// 		for name, component := range registry.components {
 
-			go func(_name string, _component *Component) {
-				_, err := net.Dial("tcp", _component.Address)
-				if err != nil {
-					registery.RemoveComponent(_name)
-				}
-			}(name, component)
-		}
+// 			go func(_name string, _component *Component) {
+// 				_, err := net.Dial("tcp", _component.Address)
+// 				if err != nil {
+// 					registery.RemoveComponent(_name)
+// 				}
+// 			}(name, component)
+// 		}
 
-		time.Sleep(10 * time.Second)
-	}
-}
+// 		time.Sleep(10 * time.Second)
+// 	}
+// }
 
 func generateHMAC(data []byte, key []byte) []byte {
 	mac := hmac.New(sha256.New, key) // 32 bytes

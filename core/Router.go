@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 )
 
@@ -12,23 +11,19 @@ func router(message []byte, addr string) ([]byte, error) {
 	operationCode := message[0]
 	body := message[1:]
 
-	// Register Component
-	if operationCode == 0 {
+	switch operationCode {
+	case 0:
 		return RegisterComponent(body, addr)
-	}
-
-	if operationCode == 69 {
-		return GetComponents()
-	} else if operationCode == 2 {
+	case 2:
 		return GetComponent(body)
+	case 69:
+		return GetComponents()
 	}
 
-	return nil, nil
+	return nil, errors.New("invalid operation code")
 
 }
 
-// TODO
-// Have to generate token
 func RegisterComponent(body []byte, addr string) ([]byte, error) {
 
 	decodedBody := map[string]string{}
@@ -52,21 +47,12 @@ func RegisterComponent(body []byte, addr string) ([]byte, error) {
 	componentList := GetComponentList()
 
 	err = componentList.Add(name, comp)
-	if err != nil {
-		return nil, err
-	}
 
-	token := []byte("amir12345")
+	response := []byte("component registered")
 
-	fmt.Println(decodedBody)
-	fmt.Println(addr)
-
-	return token, err
+	return response, err
 }
 
-// TODO
-// Current Code is old and it looks wrong
-// future amir look into it
 func GetComponents() ([]byte, error) {
 	componentList := GetComponentList()
 
