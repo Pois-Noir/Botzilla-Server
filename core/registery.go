@@ -7,13 +7,13 @@ import (
 )
 
 var (
-	registery *Ren.SafeList[string, Component]
+	registery *Ren.SafeMap[string, Component] // file name changed to map instead of list
 	once      sync.Once
 )
 
-func GetRegistery() *Ren.SafeList[string, Component] {
+func GetRegistery() *Ren.SafeMap[string, Component] {
 	once.Do(func() {
-		registery = Ren.NewSafeList[string, Component]()
+		registery = Ren.NewSafeMap[string, Component]()
 	})
 	return registery
 }
