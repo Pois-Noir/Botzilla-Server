@@ -98,15 +98,16 @@ func handler(conn net.Conn, secretKey string) {
 }
 
 func cleanupInactiveListeners() {
+
 	for {
 		registry := GetRegistery()
-
-		for name, component := range registry.components {
+		components := registry.Data()
+		for name, component := range components {
 
 			go func(_name string, _component *Component) {
 				_, err := net.Dial("tcp", _component.Address)
 				if err != nil {
-					registery.RemoveComponent(_name)
+					registery.Remove(_name)
 				}
 			}(name, component)
 		}
