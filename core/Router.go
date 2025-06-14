@@ -8,13 +8,19 @@ import (
 
 func router(message []byte, addr string) ([]byte, error) {
 
+	// format
+	// TODO add checking of status code in the tcp code
+	// to make sure there was no transmission error
+	// status code 1 byte
+	// operation code 1 byte
+
 	operationCode := message[0]
 	body := message[1:]
 
 	// Routing
 	switch operationCode {
 	case 0:
-		return RegisterComponent(body, addr)
+		return RegisterComponent(body, addr) // retuns byte slice and error
 	case 2:
 		return GetComponent(body)
 	case 69:
