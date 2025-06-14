@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+
+	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
 )
 
 func router(message []byte, addr string) ([]byte, error) {
@@ -14,7 +16,7 @@ func router(message []byte, addr string) ([]byte, error) {
 	// status code 1 byte
 	// operation code 1 byte
 
-	operationCode := message[0]
+	operationCode := message[global_configs.OPERATIONCODEINDEX]
 	body := message[1:]
 
 	// Routing
