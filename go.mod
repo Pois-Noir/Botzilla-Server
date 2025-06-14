@@ -3,4 +3,7 @@ module github.com/Pois-Noir/Botzilla-Server
 
 go 1.24.3
 
-require github.com/Pois-Noir/Ren v0.0.0-20250604215632-2119cd8e88a3 // indirect
+require (
+	github.com/Pois-Noir/Botzilla-Utils v0.0.0-20250613234636-66f13253c904 // indirect
+	github.com/Pois-Noir/Ren v0.0.0-20250604215632-2119cd8e88a3 // indirect
+)
