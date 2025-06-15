@@ -17,6 +17,7 @@ import (
 	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
 	utils_header "github.com/Pois-Noir/Botzilla-Utils/header"
 	utils_hmac "github.com/Pois-Noir/Botzilla-Utils/hmac"
+	decoder "github.com/Pois-Noir/Mammad/decoder"
 )
 
 func StartTCPServer(port int, secretKey string) {
@@ -74,10 +75,10 @@ func handler(conn net.Conn, secretKey string) {
 	componentAddr := conn.RemoteAddr().String()
 
 	messageLength := header.Length
-	buffer := make([]byte, messageLength)
+	messageBuffer := make([]byte, messageLength)
 
 	// trying to read all of the message
-	n, err := io.ReadFull(bReader, buffer[:])
+	n, err := io.ReadFull(bReader, messageBuffer[:])
 
 	// if the bytes read
 	// is less than the message Length
@@ -100,19 +101,20 @@ func handler(conn net.Conn, secretKey string) {
 		return
 	}
 
-	if !utils_hmac.VerifyHMAC(buffer, []byte(secretKey), hash[:]) {
+	if !utils_hmac.VerifyHMAC(messageBuffer, []byte(secretKey), hash[:]) {
 		fmt.Printf("Error verifying HMAC signature\n")
 		return
 	}
-
-	response, err := router(buffer, componentAddr)
+	// after we have successfully determined that the message is not tampered with
+	// we can decode it
+	decoder := decoder.NewDecoderBytes(messageBuffer)
+	message, err := decoder.Decode(int(messageLength))
+	response, err := router(message, componentAddr)
 	if err != nil {
 		fmt.Println("There was an error processing your request: \n", err)
 		return
 	}
 
-	// Generate Header for server
-	messageLength := int32(len(response))
 	responseHeaderBuf := new(bytes.Buffer)
 	err = binary.Write(responseHeaderBuf, binary.LittleEndian, messageLength) // LittleEndian like umar
 	if err != nil {
