@@ -17,6 +17,7 @@ import (
 	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
 	utils_header "github.com/Pois-Noir/Botzilla-Utils/header"
 	utils_hmac "github.com/Pois-Noir/Botzilla-Utils/hmac"
+	utils_message "github.com/Pois-Noir/Botzilla-Utils/message"
 	decoder "github.com/Pois-Noir/Mammad/decoder"
 )
 
@@ -108,8 +109,8 @@ func handler(conn net.Conn, secretKey string) {
 	// after we have successfully determined that the message is not tampered with
 	// we can decode it
 	decoder := decoder.NewDecoderBytes(messageBuffer)
-	message, err := decoder.Decode(int(messageLength))
-	response, err := router(message, componentAddr)
+	messageMap, err := decoder.Decode(int(messageLength))
+	response, err := router(&utils_message.Message{Header: *header, Payload: messageMap}, componentAddr)
 	if err != nil {
 		fmt.Println("There was an error processing your request: \n", err)
 		return

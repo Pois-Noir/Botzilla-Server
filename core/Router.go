@@ -6,9 +6,10 @@ import (
 	"net"
 
 	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
+	utils_message "github.com/Pois-Noir/Botzilla-Utils/message"
 )
 
-func router(message []byte, addr string) ([]byte, error) {
+func router(message *utils_message.Message, addr string) ([]byte, error) {
 
 	// format
 	// TODO add checking of status code in the tcp code
@@ -16,16 +17,16 @@ func router(message []byte, addr string) ([]byte, error) {
 	// status code 1 byte
 	// operation code 1 byte
 
-	operationCode := message[global_configs.OPERATIONCODEINDEX]
-	body := message[1:]
+	operationCode := message.Header.OperationCode
+	body := message.Payload
 
 	// Routing
 	switch operationCode {
-	case 0:
+	case global_configs.REGISTERCOMPONENTOPERATIONCODE:
 		return RegisterComponent(body, addr) // retuns byte slice and error
-	case 2:
+	case global_configs.GETCOMPONENTOPERATIONCODE:
 		return GetComponent(body)
-	case 69:
+	case global_configs.GETCOMPONENTSOPERATIONCODE:
 		return GetComponents()
 	}
 
@@ -33,16 +34,10 @@ func router(message []byte, addr string) ([]byte, error) {
 
 }
 
-func RegisterComponent(body []byte, addr string) ([]byte, error) {
+func RegisterComponent(body map[string]interface{}, addr string) ([]byte, error) {
 
-	// Decoding the message
-	decodedBody := map[string]string{}
-	err := json.Unmarshal(body, &decodedBody)
-	if err != nil {
-		return nil, err
-	}
-	name := decodedBody["name"]
-	port := decodedBody["port"]
+	name := body["name"]
+	port := body["port"]
 
 	// Generating listener addr of componenet
 	host, _, err := net.SplitHostPort(addr)
@@ -72,7 +67,7 @@ func GetComponents() ([]byte, error) {
 	return data, err
 }
 
-func GetComponent(body []byte) ([]byte, error) {
+func GetComponent(body map[string]interface{}) ([]byte, error) {
 
 	name := string(body)
 
