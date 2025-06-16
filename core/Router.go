@@ -4,20 +4,27 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+
+	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
 )
 
-func router(message []byte, addr string) ([]byte, error) {
+// TODO
+// Might get rid of the func since it is not doing shit
+func router(encodedPayload []byte, operationCode uint8, addr string) ([]byte, error) {
 
-	operationCode := message[0]
-	body := message[1:]
+	// format
+	// TODO add checking of status code in the tcp code
+	// to make sure there was no transmission error
+	// status code 1 byte
+	// operation code 1 byte
 
 	// Routing
 	switch operationCode {
-	case 0:
-		return RegisterComponent(body, addr)
-	case 2:
-		return GetComponent(body)
-	case 69:
+	case global_configs.REGISTER_COMPONENT_OPERATION_CODE:
+		return RegisterComponent(encodedPayload, addr) // retuns byte slice and error
+	case global_configs.GET_COMPONENT_OPERATION_CODE:
+		return GetComponent(encodedPayload)
+	case global_configs.GET_COMPONENTS_OPERATION_CODE:
 		return GetComponents()
 	}
 
@@ -25,16 +32,14 @@ func router(message []byte, addr string) ([]byte, error) {
 
 }
 
-func RegisterComponent(body []byte, addr string) ([]byte, error) {
+func RegisterComponent(encodedPayload []byte, addr string) ([]byte, error) {
 
-	// Decoding the message
-	decodedBody := map[string]string{}
-	err := json.Unmarshal(body, &decodedBody)
-	if err != nil {
-		return nil, err
-	}
-	name := decodedBody["name"]
-	port := decodedBody["port"]
+	var payload map[string]string
+
+	json.Unmarshal(encodedPayload, &payload)
+
+	name := payload["name"]
+	port := payload["port"]
 
 	// Generating listener addr of componenet
 	host, _, err := net.SplitHostPort(addr)
@@ -64,9 +69,9 @@ func GetComponents() ([]byte, error) {
 	return data, err
 }
 
-func GetComponent(body []byte) ([]byte, error) {
+func GetComponent(encodedPayload []byte) ([]byte, error) {
 
-	name := string(body)
+	name := string(encodedPayload)
 
 	registery := GetRegistery()
 	comp := registery.Get(name)

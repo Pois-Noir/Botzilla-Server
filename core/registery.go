@@ -3,17 +3,17 @@ package core
 import (
 	"sync"
 
-	"github.com/Pois-Noir/Ren"
+	"github.com/Pois-Noir/Botzilla-Utils/safemap"
 )
 
 var (
-	registery *Ren.SafeMap[string, Component] // file name changed to map instead of list
+	registery *safemap.SafeMap[string, Component] // file name changed to map instead of list
 	once      sync.Once
 )
 
-func GetRegistery() *Ren.SafeMap[string, Component] {
+func GetRegistery() *safemap.SafeMap[string, Component] {
 	once.Do(func() {
-		registery = Ren.NewSafeMap[string, Component]()
+		registery = safemap.NewSafeMap[string, Component]()
 	})
 	return registery
 }
