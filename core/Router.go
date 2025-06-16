@@ -6,10 +6,11 @@ import (
 	"net"
 
 	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
-	utils_message "github.com/Pois-Noir/Botzilla-Utils/message"
 )
 
-func router(message *utils_message.Message, addr string) ([]byte, error) {
+// TODO
+// Might get rid of the func since it is not doing shit
+func router(encodedPayload []byte, operationCode uint8, addr string) ([]byte, error) {
 
 	// format
 	// TODO add checking of status code in the tcp code
@@ -17,16 +18,13 @@ func router(message *utils_message.Message, addr string) ([]byte, error) {
 	// status code 1 byte
 	// operation code 1 byte
 
-	operationCode := message.Header.OperationCode
-	body := message.Payload
-
 	// Routing
 	switch operationCode {
-	case global_configs.REGISTERCOMPONENTOPERATIONCODE:
-		return RegisterComponent(body, addr) // retuns byte slice and error
-	case global_configs.GETCOMPONENTOPERATIONCODE:
-		return GetComponent(body)
-	case global_configs.GETCOMPONENTSOPERATIONCODE:
+	case global_configs.REGISTER_COMPONENT_OPERATION_CODE:
+		return RegisterComponent(encodedPayload, addr) // retuns byte slice and error
+	case global_configs.GET_COMPONENT_OPERATION_CODE:
+		return GetComponent(encodedPayload)
+	case global_configs.GET_COMPONENTS_OPERATION_CODE:
 		return GetComponents()
 	}
 
@@ -34,10 +32,14 @@ func router(message *utils_message.Message, addr string) ([]byte, error) {
 
 }
 
-func RegisterComponent(body map[string]interface{}, addr string) ([]byte, error) {
+func RegisterComponent(encodedPayload []byte, addr string) ([]byte, error) {
 
-	name := body["name"]
-	port := body["port"]
+	var payload map[string]string
+
+	json.Unmarshal(encodedPayload, &payload)
+
+	name := payload["name"]
+	port := payload["port"]
 
 	// Generating listener addr of componenet
 	host, _, err := net.SplitHostPort(addr)
@@ -67,9 +69,9 @@ func GetComponents() ([]byte, error) {
 	return data, err
 }
 
-func GetComponent(body map[string]interface{}) ([]byte, error) {
+func GetComponent(encodedPayload []byte) ([]byte, error) {
 
-	name := string(body)
+	name := string(encodedPayload)
 
 	registery := GetRegistery()
 	comp := registery.Get(name)

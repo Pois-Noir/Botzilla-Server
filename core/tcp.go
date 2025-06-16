@@ -1,24 +1,15 @@
 package core
 
 import (
-	"bytes"
-	"io"
-
-	// "crypto/hmac"
-	// "crypto/sha256"
-	// "crypto/subtle"
 	"bufio"
-	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
 	"os"
-	"time"
 
 	global_configs "github.com/Pois-Noir/Botzilla-Utils/global_configs"
-	utils_header "github.com/Pois-Noir/Botzilla-Utils/header"
+	header_pkg "github.com/Pois-Noir/Botzilla-Utils/header"
 	utils_hmac "github.com/Pois-Noir/Botzilla-Utils/hmac"
-	utils_message "github.com/Pois-Noir/Botzilla-Utils/message"
-	decoder "github.com/Pois-Noir/Mammad/decoder"
 )
 
 func StartTCPServer(port int, secretKey string) {
@@ -27,6 +18,7 @@ func StartTCPServer(port int, secretKey string) {
 	address := listener.Addr().String()
 	fmt.Println("Listening on:", address)
 
+	// TODO
 	if err != nil {
 		fmt.Println("There was an error starting the server: \n", err)
 		os.Exit(1)
@@ -34,13 +26,13 @@ func StartTCPServer(port int, secretKey string) {
 
 	defer listener.Close()
 
+	// TODO
 	fmt.Println("Starting Server")
-
-	go cleanupInactiveListeners()
 
 	for {
 
 		conn, err := listener.Accept()
+		// TODO
 		if err != nil {
 			fmt.Println("Error accepting connection: \n", err)
 			continue
@@ -54,109 +46,89 @@ func handler(conn net.Conn, secretKey string) {
 
 	defer conn.Close()
 
-	// create a buffered reader
-	// get the header
-	// get the body bytes
-	// get the hash bytes
-	// check if the hash is okay or not
-
+	// getting incoming request addr
+	componentAddr := conn.RemoteAddr().String()
 	// creating a buffered reader from the connection object
 	bReader := bufio.NewReader(conn)
 
-	// need to get the header
-	header, err := utils_header.DecodeHeaderBuffered(bReader)
+	var RequestHeaderBuffer [global_configs.HEADER_LENGTH]byte
+	n, err := io.ReadFull(bReader, RequestHeaderBuffer[:])
 
-	// check if there were any errors while reading the header
+	// TODO
+	if uint32(n) < global_configs.HEADER_LENGTH {
+
+	}
+
+	// TODO
 	if err != nil {
 		// do something
 		// // call Amir 438 282 3324
 	}
-	// i dont know what this line does
-	// call Amir 438 282 3324
-	componentAddr := conn.RemoteAddr().String()
 
-	messageLength := header.Length
-	messageBuffer := make([]byte, messageLength)
+	RequestHeader, err := header_pkg.Decode(RequestHeaderBuffer[:])
 
-	// trying to read all of the message
-	n, err := io.ReadFull(bReader, messageBuffer[:])
-
-	// if the bytes read
-	// is less than the message Length
-	// we know that there were transmission errors
-	if n < int(messageLength) {
+	// TODO
+	if err != nil {
 		// do something
 		// // call Amir 438 282 3324
 	}
-	// if there were errors trying to read the error
+
+	PayloadBuffer := make([]byte, RequestHeader.PayloadLength)
+
+	// trying to read all of the message
+	n, err = io.ReadFull(bReader, PayloadBuffer)
+
+	// TODO
+	if uint32(n) < RequestHeader.PayloadLength {
+		// do something
+		// // call Amir 438 282 3324
+	}
+
+	// TODO
 	if err != nil {
 		// we must send the sender appropriate message
 		// to let them know what actually happened
 	}
 
-	hash := [global_configs.HASHLENGTH]byte{}
+	hash := [global_configs.HASH_LENGTH]byte{}
 	_, err = conn.Read(hash[:])
 
+	// TODO
 	if err != nil {
 		fmt.Printf("Error reading from connection: %v\n", err)
 		return
 	}
 
-	if !utils_hmac.VerifyHMAC(messageBuffer, []byte(secretKey), hash[:]) {
+	// TODO
+	if !utils_hmac.VerifyHMAC(PayloadBuffer, []byte(secretKey), hash[:]) {
 		fmt.Printf("Error verifying HMAC signature\n")
 		return
 	}
 	// after we have successfully determined that the message is not tampered with
 	// we can decode it
-	decoder := decoder.NewDecoderBytes(messageBuffer)
-	messageMap, err := decoder.Decode(int(messageLength))
-	response, err := router(&utils_message.Message{Header: *header, Payload: messageMap}, componentAddr)
+
+	ResponsePayload, err := router(
+		PayloadBuffer,
+		RequestHeader.OperationCode,
+		componentAddr,
+	)
+
+	// TODO
 	if err != nil {
 		fmt.Println("There was an error processing your request: \n", err)
 		return
 	}
 
-	responseHeaderBuf := new(bytes.Buffer)
-	err = binary.Write(responseHeaderBuf, binary.LittleEndian, messageLength) // LittleEndian like umar
-	if err != nil {
-		fmt.Println("binary.Write failed:", err)
-		return
-	}
+	// Todo
+	// Add server status code response
+	ResponseHeader := header_pkg.NewHeader(
+		global_configs.OK_STATUS,
+		global_configs.USER_MESSAGE_OPERATION_CODE,
+		uint32(len(ResponsePayload)),
+	)
 
-	conn.Write(responseHeaderBuf.Bytes())
-	conn.Write(response)
+	Response := append(ResponseHeader.Encode(), ResponsePayload...)
+
+	conn.Write(Response)
 
 }
-
-func cleanupInactiveListeners() {
-
-	for {
-		registry := GetRegistery()
-		components := registry.Data()
-		for name, component := range components {
-
-			go func(_name string, _component *Component) {
-				_, err := net.Dial("tcp", _component.Address)
-				if err != nil {
-					registery.Remove(_name)
-				}
-			}(name, component)
-		}
-
-		time.Sleep(10 * time.Second)
-	}
-}
-
-// func generateHMAC(data []byte, key []byte) []byte {
-// 	mac := hmac.New(sha256.New, key) // 32 bytes
-// 	mac.Write(data)
-// 	return mac.Sum(nil)
-// }
-
-// func verifyHMAC(data []byte, key []byte, hash []byte) bool {
-// 	// Generate HMAC for the provided data using the same key
-// 	generatedHMAC := generateHMAC(data, key)
-
-// 	// Use subtle.ConstantTimeCompare to securely compare the two HMACs
-// 	return subtle.ConstantTimeCompare(generatedHMAC, hash) == 1
-// }
