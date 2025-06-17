@@ -28,7 +28,7 @@ func router(encodedPayload []byte, operationCode uint8, addr string) ([]byte, er
 		return GetComponents()
 	}
 
-	return nil, errors.New("Invalid Operation Code")
+	return nil, errors.New("invalid operation code")
 
 }
 
@@ -41,7 +41,7 @@ func RegisterComponent(encodedPayload []byte, addr string) ([]byte, error) {
 	name := payload["name"]
 	port := payload["port"]
 
-	// Generating listener addr of componenet
+	// Generating listener addr of component
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err
