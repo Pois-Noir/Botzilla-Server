@@ -91,7 +91,7 @@ func handler(conn net.Conn, secretKey string) {
 	}
 
 	hash := [global_configs.HASH_LENGTH]byte{}
-	_, err = conn.Read(hash[:])
+	_, err = io.ReadFull(bReader, hash[:])
 
 	// TODO
 	if err != nil {
