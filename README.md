@@ -1,3 +1,7 @@
+
+# **Important**
+**Botzilla Server is no longer needed for Botzilla and is no longer supported.**
+
 # Botzilla-Server
 
 Botzilla-Server is a server-side application written in Go to handle core functions performed by Botzilla. It runs a TCP server for communication to register and manage components. The message routing in the Botzilla server allows the server to handle different operation based on the operation codes.
